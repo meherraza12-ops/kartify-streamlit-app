@@ -22,16 +22,22 @@ st.set_page_config(
 )
 
 
-# Load the JSON file and extract values
-file_name = 'config.json'
-with open(file_name, 'r') as file:
-    config = json.load(file)
-    OPENAI_API_KEY = config.get("OPENAI_API_KEY") # Loading the API Key
-    OPENAI_API_BASE = config.get("OPENAI_API_BASE") # Loading the API Base Url
+# Read credentials from Streamlit Secrets first
+OPENAI_API_KEY = st.secrets.get("OPENAI_API_KEY", "")
+OPENAI_API_BASE = st.secrets.get("OPENAI_API_BASE", "https://api.openai.com/v1")
 
+# Optional fallback to local config.json (for local testing only)
+if not OPENAI_API_KEY:
+    try:
+        with open("config.json", "r") as file:
+            config = json.load(file)
+            OPENAI_API_KEY = config.get("OPENAI_API_KEY", "")
+            OPENAI_API_BASE = config.get("OPENAI_API_BASE", OPENAI_API_BASE)
+    except FileNotFoundError:
+        pass
 
-# Storing API credentials in environment variables
-os.environ['OPENAI_API_KEY'] = OPENAI_API_KEY
+# Store credentials in env vars
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 os.environ["OPENAI_BASE_URL"] = OPENAI_API_BASE
 
 # ── LLMs ─────────────────────────────────────────────────────────────────────
